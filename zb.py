@@ -67,10 +67,10 @@ S = {
     "plus_km": {"sl": "+ okolica {r} km", "en": "+ {r} km around", "uk": "+ {r} км навколо", "ru": "+ {r} км вокруг"},
     "sub_on": {"sl": "🔔 Opozorilo vklopljeno: {what}.", "en": "🔔 Alert is on: {what}.",
                "uk": "🔔 Сповіщення увімкнено: {what}.", "ru": "🔔 Уведомление включено: {what}."},
-    "help": {"sl": "/moja — vaša opozorila · /start — dodaj novo · /zdaj — kdo sprejema zdaj · /kmalu — kdo bo morda kmalu · /jezik — jezik",
-             "en": "/moja — my alerts · /start — add another · /zdaj — accepting now · /kmalu — likely to open soon · /jezik — language",
-             "uk": "/moja — мої сповіщення · /start — додати ще · /zdaj — хто приймає зараз · /kmalu — хто може відкритися скоро · /jezik — мова",
-             "ru": "/moja — мои уведомления · /start — добавить ещё · /zdaj — кто принимает сейчас · /kmalu — кто может открыться скоро · /jezik — язык"},
+    "help": {"sl": "/moja — vaša opozorila · /start — dodaj novo · /zdaj — kdo sprejema zdaj · /kmalu — kdo bo morda kmalu · /blizu — najbližji · /jezik — jezik",
+             "en": "/moja — my alerts · /start — add another · /zdaj — accepting now · /kmalu — likely to open soon · /blizu — nearest to me · /jezik — language",
+             "uk": "/moja — мої сповіщення · /start — додати ще · /zdaj — хто приймає зараз · /kmalu — хто може відкритися скоро · /blizu — найближчі · /jezik — мова",
+             "ru": "/moja — мои уведомления · /start — добавить ещё · /zdaj — кто принимает сейчас · /kmalu — кто может открыться скоро · /blizu — ближайшие · /jezik — язык"},
     "none_now": {"sl": "Trenutno v {where} <b>ni</b> prostih ({plural}). Obvestilo dobite, ko se to spremeni.",
                  "en": "Right now there are <b>no</b> {plural} accepting in {where}. You'll get a message when that changes.",
                  "uk": "Зараз у {where} <b>немає</b> вільних ({plural}). Ви отримаєте повідомлення, коли це зміниться.",
@@ -98,6 +98,17 @@ S = {
     "soon_none": {"sl": "Ni podatkov za {where}.", "en": "No data for {where}.", "uk": "Немає даних для {where}.", "ru": "Нет данных для {where}."},
     "choose_lang": {"sl": "Izberite jezik:", "en": "Choose language:", "uk": "Оберіть мову:", "ru": "Выберите язык:"},
     "lang_set": {"sl": "Jezik: slovenščina ✔️", "en": "Language: English ✔️", "uk": "Мова: українська ✔️", "ru": "Язык: русский ✔️"},
+    "near_type": {"sl": "📍 Katere vrste zdravnika iščete v bližini?", "en": "📍 Which type of doctor are you looking for nearby?",
+                  "uk": "📍 Якого лікаря шукаєте поруч?", "ru": "📍 Какого врача ищете рядом?"},
+    "near_ask": {"sl": "Pritisnite gumb spodaj in delite lokacijo — pokažem najbližje, ki sprejemajo.",
+                 "en": "Tap the button below to share your location — I'll show the nearest ones accepting patients.",
+                 "uk": "Натисніть кнопку нижче й надішліть локацію — покажу найближчих, хто приймає.",
+                 "ru": "Нажмите кнопку ниже и отправьте локацию — покажу ближайших, кто принимает."},
+    "near_btn": {"sl": "📍 Pošlji mojo lokacijo", "en": "📍 Send my location", "uk": "📍 Надіслати локацію", "ru": "📍 Отправить локацию"},
+    "near_head": {"sl": "📍 Najbližji, ki sprejemajo ({plural}):", "en": "📍 Nearest accepting ({plural}):",
+                  "uk": "📍 Найближчі, хто приймає ({plural}):", "ru": "📍 Ближайшие, кто принимает ({plural}):"},
+    "near_none": {"sl": "V 50 km ni nikogar, ki bi sprejemal ({plural}).", "en": "No {plural} accepting within 50 km.",
+                  "uk": "У радіусі 50 км ніхто не приймає ({plural}).", "ru": "В радиусе 50 км никто не принимает ({plural})."},
     "share": {"sl": "📤 Deli s prijatelji", "en": "📤 Share with friends", "uk": "📤 Поділитися", "ru": "📤 Поделиться"},
     "share_text": {"sl": "Bot te obvesti, ko zdravnik v tvoji občini začne sprejemati nove paciente",
                    "en": "This bot tells you when a doctor in your Slovenian municipality starts accepting new patients",
@@ -105,13 +116,15 @@ S = {
                    "ru": "Бот сообщает, когда врач в твоей общине Словении начнёт принимать новых пациентов"},
 }
 COMMANDS = {
-    "sl": [("start", "Novo opozorilo"), ("moja", "Moja opozorila"), ("zdaj", "Kdo sprejema zdaj"), ("kmalu", "Kdo bo morda kmalu"), ("jezik", "Jezik")],
-    "en": [("start", "New alert"), ("moja", "My alerts"), ("zdaj", "Accepting now"), ("kmalu", "Likely to open soon"), ("jezik", "Language")],
-    "uk": [("start", "Нове сповіщення"), ("moja", "Мої сповіщення"), ("zdaj", "Хто приймає зараз"), ("kmalu", "Хто може відкритися скоро"), ("jezik", "Мова")],
-    "ru": [("start", "Новое уведомление"), ("moja", "Мои уведомления"), ("zdaj", "Кто принимает сейчас"), ("kmalu", "Кто может открыться скоро"), ("jezik", "Язык")],
+    "sl": [("start", "Novo opozorilo"), ("moja", "Moja opozorila"), ("zdaj", "Kdo sprejema zdaj"), ("kmalu", "Kdo bo morda kmalu"), ("blizu", "Najbližji meni"), ("jezik", "Jezik")],
+    "en": [("start", "New alert"), ("moja", "My alerts"), ("zdaj", "Accepting now"), ("kmalu", "Likely to open soon"), ("blizu", "Nearest to me"), ("jezik", "Language")],
+    "uk": [("start", "Нове сповіщення"), ("moja", "Мої сповіщення"), ("zdaj", "Хто приймає зараз"), ("kmalu", "Хто може відкритися скоро"), ("blizu", "Найближчі до мене"), ("jezik", "Мова")],
+    "ru": [("start", "Новое уведомление"), ("moja", "Мои уведомления"), ("zdaj", "Кто принимает сейчас"), ("kmalu", "Кто может открыться скоро"), ("blizu", "Ближайшие ко мне"), ("jezik", "Язык")],
 }
 RADII = [0, 10, 25]
 BOT_USER = os.environ.get("BOT_USER", "ZdravnikAlarmBot")
+CHANNEL = os.environ.get("CHANNEL")  # e.g. @ProstiZdravniki — daily openings are posted there when set
+SITE = "https://glibey.github.io/prosti-zdravniki"
 DB = sqlite3.connect(os.path.join(os.path.dirname(os.path.abspath(__file__)), "zb.db"), check_same_thread=False)
 DB.executescript("""
 CREATE TABLE IF NOT EXISTS subs(chat INTEGER, type TEXT, muni TEXT, radius INTEGER, created REAL, active INTEGER DEFAULT 1,
@@ -209,13 +222,13 @@ def tg(method, **p):
     return json.loads(http(f"https://api.telegram.org/bot{TOKEN}/{method}", json.dumps(p).encode()))
 
 
-def send(chat, text, kb=None):
+def send(chat, text, kb=None, markup=None):
     if not TOKEN:
         print(f"[dry → {chat}]\n{text}\n{json.dumps(kb, ensure_ascii=False) if kb else ''}\n", flush=True)
         return True
     try:
         tg("sendMessage", chat_id=chat, text=text, parse_mode="HTML", disable_web_page_preview=True,
-           **({"reply_markup": {"inline_keyboard": kb}} if kb else {}))
+           **({"reply_markup": {"inline_keyboard": kb}} if kb else {"reply_markup": markup} if markup else {}))
         return True
     except urllib.error.HTTPError as e:
         print("send error", chat, e.code, e.read()[:200], flush=True)
@@ -262,6 +275,35 @@ def notify(keys):
     return per_chat
 
 
+def post_channel(keys):
+    """Public channel digest of today's openings (Slovenian), each with a one-tap subscribe link."""
+    if not CHANNEL:
+        return
+    by = {}
+    for k in keys:
+        by.setdefault((DOCS[k]["municipality"], DOCS[k]["type"]), []).append(DOCS[k])
+    lines = [f"🔔 <b>Novi prosti zdravniki</b> ({time.strftime('%-d. %-m.')}) — sprejemajo nove paciente:\n"]
+    for (muni, typ), ds in sorted(by.items())[:40]:
+        names = ", ".join(esc(d["name"]) for d in ds[:4]) + (f" +{len(ds) - 4}" if len(ds) > 4 else "")
+        lines.append(f"{ICON[typ]} <b>{esc(muni)}</b> · {TYPE_NAMES['sl'][typ][0].lower()}: {names} "
+                     f"(<a href=\"https://t.me/{BOT_USER}?start={typ}_{slug(muni)}\">obvesti me</a>)")
+    lines.append(f"\nVse po občinah: {SITE}/\nObvestila za vašo občino: @{BOT_USER}")
+    send(CHANNEL, "\n".join(lines)[:4000])
+
+
+def check_stale(ts):
+    """Tell the owner (once a day) when Sledilnik data has not been refreshed for 2+ days."""
+    try:
+        age = time.time() - int(ts)
+    except ValueError:
+        return
+    today = time.strftime("%F")
+    if age > 2 * 86400 and OWNER and DB.execute("SELECT v FROM meta WHERE k='stale_warned'").fetchone() != (today,):
+        send(OWNER, f"⚠️ Sledilnik data is {age / 86400:.1f} days old (ts {ts}). Alerts are paused until it updates.")
+        with lock:
+            DB.execute("INSERT OR REPLACE INTO meta VALUES('stale_warned', ?)", (today,)); DB.commit()
+
+
 def set_docs(docs, cent):
     global DOCS, CENT, AVG_LOAD
     DOCS, CENT = docs, cent
@@ -274,6 +316,7 @@ def set_docs(docs, cent):
 
 def poll_once():
     ts = http(RAW.format(ref="main", f="doctors.csv.timestamp")).decode().strip()
+    check_stale(ts)
     last = DB.execute("SELECT v FROM meta WHERE k='ts'").fetchone()
     if DOCS and last and last[0] == ts:
         return 0
@@ -282,6 +325,7 @@ def poll_once():
     keys = opened(old, DOCS) if old else []  # first run only seeds state
     if keys:
         notify(keys)
+        post_channel(keys)
     with lock:
         DB.execute("DELETE FROM state")
         DB.executemany("INSERT INTO state VALUES(?,?)", [(k, d["accepts"]) for k, d in DOCS.items()])
@@ -383,6 +427,8 @@ def on_text(chat, text, code=None):
         return for_each_sub(chat, lang, show_now)
     if t.startswith("/kmalu"):
         return for_each_sub(chat, lang, show_soon)
+    if t.startswith("/blizu"):
+        return send(chat, S["near_type"][lang], [[{"text": tname(x, lang), "callback_data": f"n:{x}"}] for x in TYPES])
     if t.startswith(("/jezik", "/lang")):
         return send(chat, S["choose_lang"][lang], [[{"text": v, "callback_data": f"l:{k}"}] for k, v in LANGS.items()])
     if t.startswith("/stats") and chat == OWNER:
@@ -395,8 +441,8 @@ def on_text(chat, text, code=None):
                           "WHERE src IS NOT NULL GROUP BY 1").fetchall()
         return send(chat, f"users {u} (with alerts {n[0]}), subs {n[1]}\nalerts sent {s[0]} to {s[1]} users\n"
                           f"langs {dict(langs)} · src {dict(srcs)}\n" + "\n".join(f"{m}: {c}" for m, c in top))
-    p = DB.execute("SELECT type FROM pending WHERE chat=?", (chat,)).fetchone()
-    if not p or not p[0]:
+    p = DB.execute("SELECT type, muni FROM pending WHERE chat=?", (chat,)).fetchone()
+    if not p or not p[0] or p[1] == "@near":
         return send(chat, S["choose_type"][lang], type_kb(lang))
     found = find_muni(t)
     if not found:
@@ -435,6 +481,27 @@ def show_soon(chat, lang, typ, muni, r):
     send(chat, f"{S['soon_head'][lang].format(plural=plural, where=where)}\n\n{body}")
 
 
+def show_near(chat, lang, typ, lat, lon):
+    plural = tname(typ, lang, True)
+    near = sorted(((km(lat, lon, d["lat"], d["lon"]), d) for d in DOCS.values()
+                   if d["type"] == typ and d["accepts"] == "y" and d["lat"]), key=lambda x: x[0])
+    near = [(dist, d) for dist, d in near if dist <= 50][:6]
+    rm = {"remove_keyboard": True}
+    if not near:
+        return send(chat, S["near_none"][lang].format(plural=plural), markup=rm)
+    body = "\n\n".join(card(d, lang, f"📏 {dist:.1f} km") for dist, d in near)
+    send(chat, f"{S['near_head'][lang].format(plural=plural)}\n\n{body}", markup=rm)
+
+
+def on_location(chat, lat, lon, code=None):
+    lang = lang_of(chat, code)
+    p = DB.execute("SELECT type, muni FROM pending WHERE chat=?", (chat,)).fetchone()
+    typ = p[0] if p and p[1] == "@near" and p[0] in TYPES else "gp"
+    with lock:
+        DB.execute("DELETE FROM pending WHERE chat=? AND muni='@near'", (chat,)); DB.commit()
+    show_near(chat, lang, typ, lat, lon)
+
+
 def on_cb(chat, data, code=None):
     lang = lang_of(chat, code)
     kind, val = data.split(":", 1)
@@ -446,6 +513,12 @@ def on_cb(chat, data, code=None):
                scope={"type": "chat", "chat_id": chat})
         return send(chat, S["lang_set"][val] + "\n\n" + S["help"][val])
     p = DB.execute("SELECT type, muni FROM pending WHERE chat=?", (chat,)).fetchone()
+    if kind == "n" and val in TYPES:
+        set_pending(chat, val, "@near")
+        return send(chat, S["near_ask"][lang], markup={"keyboard": [[{"text": S["near_btn"][lang], "request_location": True}]],
+                                                       "resize_keyboard": True, "one_time_keyboard": True})
+    if p and p[1] == "@near":
+        p = None
     if kind == "t":
         if p and p[1]:  # municipality already chosen via deep link
             return ask_radius(chat, lang, val, p[1])
@@ -484,7 +557,11 @@ def bot_loop():
             for u in tg("getUpdates", timeout=25, offset=off)["result"]:
                 off = u["update_id"] + 1
                 try:
-                    if "message" in u and "text" in u["message"]:
+                    if "message" in u and "location" in u["message"]:
+                        m = u["message"]
+                        on_location(m["chat"]["id"], m["location"]["latitude"], m["location"]["longitude"],
+                                    m.get("from", {}).get("language_code"))
+                    elif "message" in u and "text" in u["message"]:
                         m = u["message"]
                         print("msg", m["chat"]["id"], m["text"][:40], flush=True)
                         on_text(m["chat"]["id"], m["text"], m.get("from", {}).get("language_code"))

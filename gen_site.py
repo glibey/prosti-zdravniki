@@ -1,7 +1,7 @@
 """Static SEO site: one page per municipality listing doctors that accept new patients, CTA to the bot.
 Usage: python3 gen_site.py [out_dir]   (SITE_URL env sets the canonical base URL)"""
-import html, os, re, sys, time
-from zb import ICON, TYPES, TYPE_NAMES, load, norm, slug as tg_slug
+import html, json, os, re, sys, time
+from zb import ICON, TYPES, TYPE_NAMES, km, load, norm, slug as tg_slug
 
 BOT = "ZdravnikAlarmBot"
 BASE = os.environ.get("SITE_URL", "https://glibey.github.io/prosti-zdravniki").rstrip("/")
@@ -9,6 +9,8 @@ OUT = sys.argv[1] if len(sys.argv) > 1 else os.path.join(os.path.dirname(os.path
 e = html.escape
 slug = lambda s: norm(s).replace(" ", "-").replace("/", "-")
 SHORT = {t: n for t, (n, _) in TYPE_NAMES["sl"].items()}
+TSLUG = {t: tg_slug(n) for t, n in SHORT.items()}  # gp -> druzinski-zdravnik
+GUIDE = "kako-do-osebnega-zdravnika"
 
 CSS = """
 :root{--bg:#f4f6fb;--card:#fff;--ink:#0f172a;--mute:#64748b;--line:#e2e8f0;--acc:#2563eb;--acc2:#0ea5e9;--ok:#059669;
@@ -66,7 +68,7 @@ FAVICON = ("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox
            "font-size='90'%3E🩺%3C/text%3E%3C/svg%3E")
 
 
-def page(title, desc, path, body, fab):
+def page(title, desc, path, body, fab, ld=None):
     return f"""<!doctype html><html lang="sl"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1"><title>{e(title)}</title>
 <meta name="description" content="{e(desc)}"><meta name="google-site-verification" content="PwTt1UPX262GmMSqj9DdlXHXOj1tHu2SNKG2TQiBhpg">
@@ -75,14 +77,24 @@ def page(title, desc, path, body, fab):
 <meta property="og:url" content="{BASE}/{path}"><meta name="theme-color" content="#2563eb">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<style>{CSS}</style></head><body>
+<style>{CSS}</style>{ld_tag(ld)}</head><body>
 <header class="top"><div class="wrap"><a class="logo" href="{BASE}/">Prosti<span>zdravniki</span></a>
-<a class="btn sm pri hide-m" href="{fab}">🔔 Obvestila v Telegramu</a></div></header>
+<nav style="display:flex;gap:8px;align-items:center"><a class="btn sm" href="{BASE}/{GUIDE}/">Kako do zdravnika?</a>
+<a class="btn sm pri hide-m" href="{fab}">🔔 Obvestila</a></nav></div></header>
 <main class="wrap">{body}</main>
 <a class="btn pri fab" href="{fab}">🔔 Obvesti me, ko se sprosti mesto</a>
 <footer><div class="wrap">Podatki: ZZZS prek <a href="https://zdravniki.sledilnik.org">Sledilnik</a> (CC BY 4.0), osveženo vsak dan.
 Stanje se lahko spremeni — pred obiskom pokličite ambulanto. Neodvisna stran, ni povezana z ZZZS.</div></footer>
 </body></html>"""
+
+
+def ld_tag(ld):
+    return f'<script type="application/ld+json">{json.dumps(ld, ensure_ascii=False)}</script>' if ld else ""
+
+
+def faq_ld(qa):
+    return {"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [
+        {"@type": "Question", "name": q, "acceptedAnswer": {"@type": "Answer", "text": re.sub("<[^>]+>", "", a)}} for q, a in qa]}
 
 
 def tg_link(muni="", typ=""):
@@ -123,7 +135,7 @@ def muni_page(muni, ds, today):
                          f'<div class="bar"><i style="width:{round(100 * len(ta) / len(tl))}%"></i></div></div>')
         body = "".join(doc(d) for d in ta) or '<div class="empty">Trenutno nihče ne sprejema novih pacientov.</div>'
         secs.append(f'<section class="sec" id="{t}"><div class="sec-h"><h2>{ICON[t]} {SHORT[t]}</h2>'
-                    f'<span class="n">sprejema {len(ta)} od {len(tl)}</span></div>{body}'
+                    f'<a class="n" href="{TSLUG[t]}/">sprejema {len(ta)} od {len(tl)} →</a></div>{body}'
                     f'<div class="bell"><span>Obvestimo vas, ko {SHORT[t].lower()} v občini {e(muni)} začne sprejemati.</span>'
                     f'<a class="btn sm pri" href="{tg_link(muni, t)}">🔔 Obvesti me</a></div></section>')
     return (f'<div class="crumb"><a href="../">Vse občine</a> › {e(muni)}</div>'
@@ -135,8 +147,75 @@ def muni_page(muni, ds, today):
             f'<div class="stats">{"".join(stats)}</div><nav class="chips">{"".join(chips)}</nav>{"".join(secs)}')
 
 
+def type_page(muni, typ, ds, docs, cent, today):
+    """Prost <type> <muni>: who accepts here + who accepts within 25 km (other municipalities)."""
+    tl = [d for d in ds if d["type"] == typ]
+    ta = sorted((d for d in tl if d["accepts"] == "y"), key=lambda d: norm(d["name"]))
+    near = []
+    if muni in cent:
+        near = sorted(((km(*cent[muni], d["lat"], d["lon"]), d) for d in docs.values() if d["type"] == typ and
+                       d["accepts"] == "y" and d["lat"] and d["municipality"] != muni), key=lambda x: x[0])
+        near = [(dist, d) for dist, d in near if dist <= 25][:10] or near[:3]  # nothing close: the 3 nearest anywhere
+    near_h = "Sprejemajo v okolici (do 25 km)" if near and near[0][0] <= 25 else "Najbližji, ki sprejemajo"
+    near_html = "".join(doc(d).replace("<h3>", f'<h3><span class="pill" style="float:right">{dist:.0f} km</span>', 1)
+                        for dist, d in near) or '<div class="empty">V okolici 25 km trenutno nihče ne sprejema.</div>'
+    name, s = SHORT[typ].lower(), slug(muni)
+    body = (f'<div class="crumb"><a href="../../">Vse občine</a> › <a href="../">{e(muni)}</a> › {SHORT[typ]}</div>'
+            f'<section class="hero"><span class="eyebrow">Stanje {today}</span>'
+            f"<h1>{ICON[typ]} Prost {e(name)} {e(muni)}</h1>"
+            f'<p class="lead">V občini {e(muni)} trenutno sprejema nove paciente <b>{len(ta)}</b> od {len(tl)} '
+            f"({TYPE_NAMES['sl'][typ][1]}). Ko se sprosti mesto, vam pošljemo sporočilo v Telegram.</p>"
+            f'<a class="btn pri" href="{tg_link(muni, typ)}">🔔 Obvesti me, ko se sprosti</a></section>'
+            f'<section class="sec"><div class="sec-h"><h2>Sprejemajo v občini {e(muni)}</h2><span class="n">{len(ta)}</span></div>'
+            f'{"".join(doc(d) for d in ta) or "<div class=empty>Trenutno nihče ne sprejema novih pacientov.</div>"}</section>'
+            f'<section class="sec"><div class="sec-h"><h2>{near_h}</h2><span class="n">{len(near)}</span></div>'
+            f'{near_html}</section>'
+            f'<p><a class="btn" href="../../{GUIDE}/">📋 Kako se vpisati k zdravniku — navodila</a></p>')
+    return (f"Prost {name} {muni} ({today}) — kdo sprejema nove paciente",
+            f"{SHORT[typ]} v občini {muni} in okolici, ki sprejema nove paciente. Seznam s telefoni, osveženo vsak dan, "
+            f"in brezplačno obvestilo v Telegramu.", f"{s}/{TSLUG[typ]}/", body)
+
+
+GUIDE_QA = [
+    ("Kako si izberem osebnega zdravnika?",
+     "Pri zdravniku, ki sprejema nove paciente, podpišete listino <b>Izjava o izbiri</b> osebnega zdravnika. "
+     "S seboj imejte kartico zdravstvenega zavarovanja. Lastnoročni podpis je potreben tudi, če ambulanta izbiro vnese elektronsko."),
+    ("Katere zdravnike si lahko izberem?",
+     "Osebnega zdravnika splošne oz. družinske medicine (otroci pediatra), osebnega zobozdravnika, ženske pa tudi osebnega ginekologa."),
+    ("Ali me zdravnik lahko zavrne?",
+     "Da — če ima že več opredeljenih pacientov, kot dovoljuje dogovor oziroma vladna uredba. Zato je pomembno vedeti, "
+     "kdo trenutno <b>sprejema</b> nove paciente."),
+    ("Kako najdem zdravnika, ki sprejema?",
+     f'Na tej strani izberite <a href="../">svojo občino</a>. Podatke ZZZS (prek Sledilnika) osvežujemo vsak dan. '
+     f'Ker se mesta hitro zapolnijo, vklopite <a href="https://t.me/{BOT}">obvestilo v Telegramu</a> — sporočimo vam, '
+     "ko kdo v vaši občini začne sprejemati."),
+    ("Kaj naj naredim takoj, ko dobim obvestilo?",
+     "Čim prej pokličite ambulanto in vprašajte, ali še sprejema in kdaj lahko pridete podpisat Izjavo o izbiri. "
+     "Pred obiskom vedno preverite po telefonu — stanje se lahko spremeni čez dan."),
+    ("Kaj, če nimam osebnega zdravnika in potrebujem pomoč?",
+     "Za nujne primere pokličite 112 ali pojdite v dežurno službo. Za nenujne zadeve vam klicni center ZZZS pomaga poiskati "
+     "ambulanto za neopredeljene paciente v vaši regiji."),
+    ("Ali lahko zamenjam osebnega zdravnika?",
+     "Da. Po enem letu ga lahko zamenjate brez navajanja razloga — pri novem zdravniku izpolnite Izjavo o izbiri."),
+    ("Ali je ta stran povezana z ZZZS?",
+     "Ne. Gre za neodvisno brezplačno storitev, ki uporablja javne podatke ZZZS, ki jih zbira projekt Sledilnik (CC BY 4.0)."),
+]
+
+
+def guide_page(today):
+    qa = "".join(f'<section class="sec"><h2 style="margin:0 0 6px;font-size:19px">{e(q)}</h2>'
+                 f'<p style="margin:0;color:var(--mute)">{a}</p></section>' for q, a in GUIDE_QA)
+    body = (f'<div class="crumb"><a href="../">Vse občine</a> › Navodila</div>'
+            f'<section class="hero"><span class="eyebrow">Posodobljeno {today}</span>'
+            f"<h1>Kako do osebnega zdravnika v Sloveniji</h1>"
+            f'<p class="lead">Brez osebnega zdravnika je več kot 130.000 ljudi. Tako poteka vpis in tako najhitreje najdete prosto mesto.</p>'
+            f'<a class="btn pri" href="https://t.me/{BOT}">🔔 Obvesti me, ko se sprosti mesto</a></section>{qa}'
+            f'<p><a class="btn" href="../">🗺️ Kdo sprejema po občinah</a></p>')
+    return body, faq_ld(GUIDE_QA)
+
+
 def main():
-    docs, _ = load()
+    docs, cent = load()
     today = time.strftime("%-d. %-m. %Y")
     by_muni = {}
     for d in docs.values():
@@ -155,6 +234,13 @@ def main():
                          f"ginekolog, zobozdravnik. Brezplačno obvestilo v Telegramu.", f"{s}/",
                          muni_page(muni, ds, today), tg_link(muni)))
         urls.append(f"{s}/")
+        for t in TYPES:
+            if any(d["type"] == t for d in ds):
+                title, desc, path, body = type_page(muni, t, ds, docs, cent, today)
+                os.makedirs(os.path.join(OUT, path), exist_ok=True)
+                with open(os.path.join(OUT, path, "index.html"), "w") as f:
+                    f.write(page(title, desc, path, body, tg_link(muni, t)))
+                urls.append(path)
         card = (f'<a class="mc" href="{s}/" data-q="{e(norm(muni))}"><div>{e(muni)}<small>družinski: {gp}</small></div>'
                 f'<span class="pill{"" if acc else " z"}">{acc} prostih</span></a>')
         cards.append(card)
@@ -187,12 +273,19 @@ q.addEventListener('input',()=>{const v=n(q.value.trim());document.querySelector
         f.write(page(f"Prosti zdravniki v Sloveniji ({today}) — kdo sprejema nove paciente",
                      "Kateri osebni zdravnik, pediater, ginekolog ali zobozdravnik sprejema nove paciente v vaši občini. "
                      "Brezplačno obvestilo v Telegramu.", "", body, tg_link()))
+    gbody, gld = guide_page(today)
+    os.makedirs(os.path.join(OUT, GUIDE), exist_ok=True)
+    with open(os.path.join(OUT, GUIDE, "index.html"), "w") as f:
+        f.write(page("Kako do osebnega zdravnika v Sloveniji — vpis, Izjava o izbiri, kdo sprejema",
+                     "Kako si izberete osebnega zdravnika, kaj prinesti, ali vas lahko zavrne in kako najhitreje najdete "
+                     "zdravnika, ki sprejema nove paciente.", f"{GUIDE}/", gbody, tg_link(), gld))
+    urls.append(f"{GUIDE}/")
     with open(os.path.join(OUT, "sitemap.xml"), "w") as f:
         f.write('<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'
                 + "".join(f"<url><loc>{BASE}/{u}</loc></url>" for u in urls) + "</urlset>")
     with open(os.path.join(OUT, "robots.txt"), "w") as f:
         f.write(f"User-agent: *\nAllow: /\nSitemap: {BASE}/sitemap.xml\n")
-    print(f"{len(urls) - 1} municipality pages, {total} accepting → {OUT}")
+    print(f"{len(urls) - 1} pages, {total} accepting → {OUT}")
 
 
 if __name__ == "__main__":
