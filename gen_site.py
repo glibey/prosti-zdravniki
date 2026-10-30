@@ -20,7 +20,7 @@ a{color:#1f63b8}"""
 def page(title, desc, path, body):
     return f"""<!doctype html><html lang="sl"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1"><title>{e(title)}</title>
-<meta name="description" content="{e(desc)}"><link rel="canonical" href="{BASE}/{path}"><style>{CSS}</style></head>
+<meta name="description" content="{e(desc)}"><meta name="google-site-verification" content="PwTt1UPX262GmMSqj9DdlXHXOj1tHu2SNKG2TQiBhpg"><link rel="canonical" href="{BASE}/{path}"><style>{CSS}</style></head>
 <body><main>{body}<footer>Podatki: ZZZS prek <a href="https://zdravniki.sledilnik.org">Sledilnik</a>
 (CC BY 4.0). Stanje se lahko spremeni — pred obiskom pokličite ambulanto. Neodvisna stran, ni povezana z ZZZS.</footer>
 </main></body></html>"""
