@@ -1,7 +1,7 @@
 """Static SEO site: one page per municipality listing doctors that accept new patients, CTA to the bot.
 Usage: python3 gen_site.py [out_dir]   (SITE_URL env sets the canonical base URL)"""
 import html, os, sys, time
-from zb import TYPES, load, norm
+from zb import TYPES, load, norm, slug as tg_slug
 
 BOT = "ZdravnikAlarmBot"
 BASE = os.environ.get("SITE_URL", "https://glibey.github.io/prosti-zdravniki").rstrip("/")
@@ -13,7 +13,7 @@ CSS = """body{font:16px/1.5 system-ui,sans-serif;margin:0;color:#1d2430;backgrou
 main{max-width:760px;margin:0 auto;padding:16px}h1{font-size:1.6em;line-height:1.25}h2{margin-top:1.6em}
 .cta{display:block;background:#2a7de1;color:#fff;text-align:center;padding:14px;border-radius:10px;text-decoration:none;font-weight:600;margin:16px 0}
 .d{background:#fff;border:1px solid #e1e4e8;border-radius:8px;padding:10px 12px;margin:8px 0}.d b{display:block}
-.m{color:#5b6470;font-size:.92em}ul.c{columns:2;padding-left:18px}footer{color:#5b6470;font-size:.85em;margin:32px 0}
+.m{color:#5b6470;font-size:.92em}.sub{display:inline-block;margin:4px 0 8px;font-weight:600}ul.c{columns:2;padding-left:18px}footer{color:#5b6470;font-size:.85em;margin:32px 0}
 a{color:#1f63b8}"""
 
 
@@ -26,8 +26,13 @@ def page(title, desc, path, body):
 </main></body></html>"""
 
 
+def tg_link(muni="", typ=""):
+    """Deep link: the bot preselects municipality (m_<slug>) or subscribes in one tap (<type>_<slug>)."""
+    return f"https://t.me/{BOT}" + (f"?start={typ or 'm'}_{tg_slug(muni)}" if muni else "")
+
+
 def cta(muni=""):
-    return (f'<a class="cta" href="https://t.me/{BOT}">🔔 Obvesti me v Telegramu, ko kdo{" v občini " + e(muni) if muni else ""} '
+    return (f'<a class="cta" href="{tg_link(muni)}">🔔 Obvesti me v Telegramu, ko kdo{" v občini " + e(muni) if muni else ""} '
             f'začne sprejemati</a>')
 
 
@@ -60,7 +65,9 @@ def main():
                 continue
             ta = sorted((d for d in tl if d["accepts"] == "y"), key=lambda d: norm(d["name"]))
             parts.append(f"<h2>{label} — sprejema {len(ta)} od {len(tl)}</h2>")
-            parts += [doc(d) for d in ta] or ["<p>Trenutno nihče ne sprejema. Prijavite se na obvestilo zgoraj.</p>"]
+            parts += [doc(d) for d in ta] or ["<p>Trenutno nihče ne sprejema.</p>"]
+            parts.append(f'<a class="sub" href="{tg_link(muni, t)}">🔔 Obvesti me, ko {label.split(" ", 1)[1].lower()} '
+                         f'v občini {e(muni)} začne sprejemati</a>')
         parts.append(cta(muni) + '<p><a href="../">← Vse občine</a></p>')
         os.makedirs(os.path.join(OUT, s), exist_ok=True)
         with open(os.path.join(OUT, s, "index.html"), "w") as f:
